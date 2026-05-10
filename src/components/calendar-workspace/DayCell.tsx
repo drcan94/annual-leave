@@ -1,0 +1,250 @@
+"use client";
+
+import { format, getISODay } from "date-fns";
+import { useCallback, useMemo, type CSSProperties } from "react";
+import { useCalendarStore, type Leave, type Person } from "@/stores";
+
+type DayCellProps = {
+  date: Date;
+  /** Compact dots for yearly grids; spacious bars for monthly. */
+  density?: "compact" | "spacious";
+};
+
+function toIsoDateString(date: Date): string {
+  return format(date, "yyyy-MM-dd");
+}
+
+function leavesOverlappingDay(isoDay: string, leaves: Leave[]): Leave[] {
+  return leaves.filter(
+    (leave) => isoDay >= leave.startDate && isoDay <= leave.endDate,
+  );
+}
+
+function personsForLeaves(
+  dayLeaves: Leave[],
+  persons: Person[],
+): Person[] {
+  const byId = new Map(persons.map((p) => [p.id, p] as const));
+  const ordered: Person[] = [];
+  const seen = new Set<string>();
+  for (const leave of dayLeaves) {
+    const person = byId.get(leave.personId);
+    if (person && !seen.has(person.id)) {
+      seen.add(person.id);
+      ordered.push(person);
+    }
+  }
+  return ordered;
+}
+
+function hexWithAlpha(hex: string, alphaHex: string): string {
+  const t = hex.trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(t)) {
+    return `${t}${alphaHex}`;
+  }
+  return t;
+}
+
+export function DayCell({ date, density = "compact" }: DayCellProps) {
+  const leaves = useCalendarStore((s) => s.leaves);
+  const persons = useCalendarStore((s) => s.persons);
+  const assignmentModalOpen = useCalendarStore((s) => s.assignmentModal.isOpen);
+  const isSelecting = useCalendarStore((s) => s.isSelecting);
+  const selectionRange = useCalendarStore((s) => s.selectionRange);
+  const startSelection = useCalendarStore((s) => s.startSelection);
+  const updateSelection = useCalendarStore((s) => s.updateSelection);
+  const openModal = useCalendarStore((s) => s.openModal);
+
+  const iso = useMemo(() => toIsoDateString(date), [date]);
+  const dayLeaves = useMemo(
+    () => leavesOverlappingDay(iso, leaves),
+    [iso, leaves],
+  );
+  const peopleForDay = useMemo(
+    () => personsForLeaves(dayLeaves, persons),
+    [dayLeaves, persons],
+  );
+
+  const leaveBars = useMemo(() => {
+    const rows = dayLeaves
+      .map((leave) => {
+        const person = persons.find((p) => p.id === leave.personId);
+        return person ? { leave, person } : null;
+      })
+      .filter((r): r is { leave: Leave; person: Person } => r !== null);
+    rows.sort((a, b) =>
+      a.person.name.localeCompare(b.person.name, undefined, {
+        sensitivity: "base",
+      }),
+    );
+    return rows;
+  }, [dayLeaves, persons]);
+
+  const isWeekend = getISODay(date) >= 6;
+  const dayNum = date.getDate();
+
+  const inSelection =
+    selectionRange.start != null &&
+    selectionRange.end != null &&
+    iso >= selectionRange.start &&
+    iso <= selectionRange.end;
+
+  const onMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (assignmentModalOpen || e.button !== 0) return;
+      e.preventDefault();
+      startSelection(iso);
+    },
+    [assignmentModalOpen, iso, startSelection],
+  );
+
+  const onMouseEnter = useCallback(() => {
+    if (!isSelecting) return;
+    updateSelection(iso);
+  }, [isSelecting, iso, updateSelection]);
+
+  const onDragOver = useCallback((e: React.DragEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+  }, []);
+
+  const onDrop = useCallback(
+    (e: React.DragEvent<HTMLButtonElement>) => {
+      e.preventDefault();
+      const personId = e.dataTransfer.getData("personId");
+      if (!personId) return;
+      const ymd = format(date, "yyyy-MM-dd");
+      openModal({
+        defaultPersonId: personId,
+        defaultStart: ymd,
+        defaultEnd: ymd,
+      });
+    },
+    [date, openModal],
+  );
+
+  const baseCellCompact =
+    "relative flex size-8 flex-col items-center justify-between rounded-md border border-transparent text-[11px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-zinc-400 dark:focus-visible:outline-zinc-500";
+
+  const baseCellSpacious =
+    "relative flex min-h-[100px] w-full min-w-0 flex-col items-stretch rounded-lg border border-transparent p-1.5 text-left text-[11px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-zinc-400 dark:focus-visible:outline-zinc-500";
+
+  const baseCell = density === "spacious" ? baseCellSpacious : baseCellCompact;
+
+  const weekendBg = isWeekend
+    ? "bg-zinc-50/90 dark:bg-zinc-800/40"
+    : "bg-white dark:bg-zinc-900/55";
+
+  let cellVisual = "";
+  let surfaceStyle: CSSProperties | undefined;
+
+  if (!inSelection && density === "spacious") {
+    if (leaveBars.length === 0) {
+      cellVisual = weekendBg;
+    } else {
+      cellVisual = [
+        weekendBg,
+        "border border-zinc-200/70 dark:border-zinc-700/70",
+      ].join(" ");
+    }
+  } else if (!inSelection) {
+    if (peopleForDay.length === 1) {
+      const c = peopleForDay[0].color;
+      surfaceStyle = {
+        backgroundColor: hexWithAlpha(c, "22"),
+        borderColor: hexWithAlpha(c, "55"),
+      };
+      cellVisual = [
+        "border",
+        isWeekend
+          ? "ring-1 ring-inset ring-zinc-200/60 dark:ring-zinc-600/50"
+          : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+    } else if (peopleForDay.length === 0) {
+      cellVisual = weekendBg;
+    } else {
+      cellVisual = [
+        weekendBg,
+        "border border-zinc-200/80 dark:border-zinc-700/80",
+      ].join(" ");
+    }
+  } else {
+    cellVisual = [
+      "border border-dashed border-blue-400 bg-blue-100/50 dark:border-blue-500 dark:bg-blue-900/30",
+      isWeekend ? "ring-1 ring-inset ring-blue-300/40 dark:ring-blue-600/35" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  return (
+    <button
+      type="button"
+      onMouseDown={onMouseDown}
+      onMouseEnter={onMouseEnter}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      className={`${baseCell} group relative select-none ${cellVisual} text-zinc-800 hover:bg-zinc-100/80 dark:text-zinc-100 dark:hover:bg-zinc-800/70`}
+      style={surfaceStyle}
+      aria-label={`${iso}, drop to add leave`}
+    >
+      {density === "spacious" ? (
+        <>
+          <span className="shrink-0 text-xs font-semibold tabular-nums text-zinc-800 dark:text-zinc-100">
+            {dayNum}
+          </span>
+          <div className="mt-1 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
+            {leaveBars.map(({ leave, person }) => (
+              <div
+                key={leave.id}
+                className="w-full min-w-0 truncate rounded-md px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-zinc-900 shadow-sm ring-1 ring-black/10 dark:text-zinc-950 dark:ring-white/15"
+                style={{
+                  backgroundColor: hexWithAlpha(person.color, "AA"),
+                }}
+                title={`${person.name} · ${leave.startDate} – ${leave.endDate}`}
+              >
+                {person.name}
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          {density === "compact" && peopleForDay.length > 0 ? (
+            <div
+              className="pointer-events-none invisible absolute bottom-full left-1/2 z-50 mb-1.5 w-max max-w-[min(14rem,calc(100vw-2rem))] -translate-x-1/2 rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-left shadow-md opacity-0 ring-1 ring-zinc-950/5 transition-opacity duration-150 dark:border-zinc-600 dark:bg-zinc-800 dark:ring-white/10 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
+              role="tooltip"
+            >
+              <p className="mb-1 text-[9px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                On leave
+              </p>
+              <ul className="max-h-28 space-y-0.5 overflow-y-auto text-[10px] font-medium leading-snug text-zinc-800 dark:text-zinc-100">
+                {peopleForDay.map((person) => (
+                  <li key={person.id} className="truncate">
+                    {person.name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          <span className="leading-none">{dayNum}</span>
+          {peopleForDay.length > 1 ? (
+            <span className="flex max-w-full gap-0.5 px-0.5 pb-0.5" aria-hidden>
+              {peopleForDay.map((person) => (
+                <span
+                  key={person.id}
+                  className="size-1 shrink-0 rounded-full ring-1 ring-black/10 dark:ring-white/20"
+                  style={{ backgroundColor: person.color }}
+                />
+              ))}
+            </span>
+          ) : (
+            <span className="h-1.5 shrink-0" aria-hidden />
+          )}
+        </>
+      )}
+    </button>
+  );
+}

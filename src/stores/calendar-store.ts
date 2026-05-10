@@ -95,6 +95,7 @@ export interface CalendarActions {
   setView: (view: CalendarView) => void;
   setCurrentYear: (year: number) => void;
   addPerson: (name: string, color: string) => void;
+  updatePerson: (id: string, name: string, color: string) => void;
   removePerson: (id: string) => void;
   addLeave: (personId: string, startDate: string, endDate: string) => void;
   removeLeave: (id: string) => void;
@@ -173,6 +174,29 @@ export const useCalendarStore = create<CalendarStore>()(
           color: color.trim(),
         };
         set((s) => ({ persons: [...s.persons, person] }));
+      },
+
+      updatePerson: (id, name, color) => {
+        const trimmed = name.trim();
+        if (!trimmed) {
+          throw new Error("updatePerson: name cannot be empty");
+        }
+        if (typeof color !== "string" || !color.trim()) {
+          throw new Error("updatePerson: color is required");
+        }
+        const { persons } = get();
+        if (!persons.some((p) => p.id === id)) {
+          throw new Error(
+            `updatePerson: no person with id ${JSON.stringify(id)}`,
+          );
+        }
+        set((s) => ({
+          persons: s.persons.map((p) =>
+            p.id === id
+              ? { ...p, name: trimmed, color: color.trim() }
+              : p,
+          ),
+        }));
       },
 
       removePerson: (id) => {

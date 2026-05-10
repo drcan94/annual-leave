@@ -1,6 +1,6 @@
 "use client";
 
-import { GripVertical, Trash2 } from "lucide-react";
+import { Check, GripVertical, Pencil, Trash2, X } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useCalendarStore, type Person } from "@/stores";
 
@@ -18,10 +18,14 @@ const SWATCHES = [
 export function Sidebar() {
   const persons = useCalendarStore((s) => s.persons);
   const addPerson = useCalendarStore((s) => s.addPerson);
+  const updatePerson = useCalendarStore((s) => s.updatePerson);
   const removePerson = useCalendarStore((s) => s.removePerson);
 
   const [name, setName] = useState("");
   const [color, setColor] = useState<string>(SWATCHES[0]);
+  const [editingPersonId, setEditingPersonId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editColor, setEditColor] = useState("");
 
   const submit = useCallback(() => {
     const trimmed = name.trim();
@@ -44,10 +48,34 @@ export function Sidebar() {
         window.confirm(`Remove ${person.name} and their leave entries?`)
       ) {
         removePerson(person.id);
+        setEditingPersonId((id) => (id === person.id ? null : id));
       }
     },
     [removePerson],
   );
+
+  const startEdit = useCallback((person: Person) => {
+    setEditingPersonId(person.id);
+    setEditName(person.name);
+    setEditColor(person.color);
+  }, []);
+
+  const cancelEdit = useCallback(() => {
+    setEditingPersonId(null);
+  }, []);
+
+  const saveEdit = useCallback(() => {
+    if (editingPersonId === null) return;
+    const trimmed = editName.trim();
+    if (!trimmed) return;
+    try {
+      updatePerson(editingPersonId, trimmed, editColor);
+      setEditingPersonId(null);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Could not update person.";
+      window.alert(message);
+    }
+  }, [editColor, editName, editingPersonId, updatePerson]);
 
   const onDragStart = useCallback(
     (personId: string) => (e: React.DragEvent<HTMLDivElement>) => {
@@ -122,38 +150,95 @@ export function Sidebar() {
           </p>
         ) : (
           <ul className="flex flex-col gap-1">
-            {persons.map((person) => (
-              <li key={person.id}>
-                <div
-                  draggable
-                  onDragStart={onDragStart(person.id)}
-                  className="group flex cursor-grab items-center gap-1.5 rounded-md border border-zinc-200/80 bg-white px-1.5 py-1 active:cursor-grabbing dark:border-zinc-800 dark:bg-zinc-900/80"
-                >
-                  <GripVertical
-                    className="size-3.5 shrink-0 text-zinc-400 dark:text-zinc-500"
-                    aria-hidden
-                  />
-                  <span
-                    className="size-3 shrink-0 rounded-sm ring-1 ring-black/10 dark:ring-white/15"
-                    style={{ backgroundColor: person.color }}
-                    aria-hidden
-                  />
-                  <span className="min-w-0 flex-1 truncate text-xs font-medium text-zinc-900 dark:text-zinc-100">
-                    {person.name}
-                  </span>
-                  <button
-                    type="button"
-                    draggable={false}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onClick={() => onRemove(person)}
-                    className="inline-flex size-7 shrink-0 items-center justify-center rounded text-zinc-400 opacity-70 transition-colors hover:bg-red-50 hover:text-red-600 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/80 group-hover:opacity-100 dark:hover:bg-red-950/60 dark:hover:text-red-400 dark:focus-visible:ring-red-500/60"
-                    aria-label={`Remove ${person.name}`}
-                  >
-                    <Trash2 className="size-3.5" />
-                  </button>
-                </div>
-              </li>
-            ))}
+            {persons.map((person) => {
+              const isEditing = editingPersonId === person.id;
+              return (
+                <li key={person.id}>
+                  {isEditing ? (
+                    <div
+                      draggable={false}
+                      className="flex flex-col gap-1.5 rounded-md border border-zinc-200/80 bg-white px-1.5 py-1.5 dark:border-zinc-800 dark:bg-zinc-900/80"
+                    >
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") saveEdit();
+                        }}
+                        autoFocus
+                        autoComplete="off"
+                        className="h-8 w-full rounded-md border border-zinc-200 bg-white px-2 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400/40 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:focus-visible:ring-zinc-500/40"
+                      />
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="color"
+                          value={editColor}
+                          onChange={(e) => setEditColor(e.target.value)}
+                          className="h-7 w-10 shrink-0 cursor-pointer rounded border border-zinc-200 bg-white p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1 focus-visible:ring-offset-zinc-50 dark:border-zinc-700 dark:bg-zinc-950 dark:focus-visible:ring-zinc-500 dark:focus-visible:ring-offset-zinc-950"
+                          aria-label="Person color"
+                        />
+                        <button
+                          type="button"
+                          onClick={saveEdit}
+                          className="inline-flex size-7 shrink-0 items-center justify-center rounded text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 dark:focus-visible:ring-zinc-500 dark:focus-visible:ring-offset-zinc-950"
+                          aria-label="Save changes"
+                        >
+                          <Check className="size-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEdit}
+                          className="inline-flex size-7 shrink-0 items-center justify-center rounded text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-50 dark:hover:bg-zinc-800 dark:hover:text-zinc-200 dark:focus-visible:ring-zinc-500 dark:focus-visible:ring-offset-zinc-950"
+                          aria-label="Cancel editing"
+                        >
+                          <X className="size-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      draggable
+                      onDragStart={onDragStart(person.id)}
+                      className="group flex cursor-grab items-center gap-1.5 rounded-md border border-zinc-200/80 bg-white px-1.5 py-1 active:cursor-grabbing dark:border-zinc-800 dark:bg-zinc-900/80"
+                    >
+                      <GripVertical
+                        className="size-3.5 shrink-0 text-zinc-400 dark:text-zinc-500"
+                        aria-hidden
+                      />
+                      <span
+                        className="size-3 shrink-0 rounded-sm ring-1 ring-black/10 dark:ring-white/15"
+                        style={{ backgroundColor: person.color }}
+                        aria-hidden
+                      />
+                      <span className="min-w-0 flex-1 truncate text-xs font-medium text-zinc-900 dark:text-zinc-100">
+                        {person.name}
+                      </span>
+                      <button
+                        type="button"
+                        draggable={false}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={() => startEdit(person)}
+                        className="inline-flex size-7 shrink-0 items-center justify-center rounded text-zinc-400 opacity-70 transition-colors hover:bg-zinc-100 hover:text-zinc-700 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400/80 group-hover:opacity-100 dark:hover:bg-zinc-800 dark:hover:text-zinc-200 dark:focus-visible:ring-zinc-500/60"
+                        aria-label={`Edit ${person.name}`}
+                      >
+                        <Pencil className="size-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        draggable={false}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={() => onRemove(person)}
+                        className="inline-flex size-7 shrink-0 items-center justify-center rounded text-zinc-400 opacity-70 transition-colors hover:bg-red-50 hover:text-red-600 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/80 group-hover:opacity-100 dark:hover:bg-red-950/60 dark:hover:text-red-400 dark:focus-visible:ring-red-500/60"
+                        aria-label={`Remove ${person.name}`}
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

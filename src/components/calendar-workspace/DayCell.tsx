@@ -73,7 +73,7 @@ export function DayCell({ date, density = "compact" }: DayCellProps) {
       })
       .filter((r): r is { leave: Leave; person: Person } => r !== null);
     rows.sort((a, b) =>
-      a.person.name.localeCompare(b.person.name, undefined, {
+      a.person.name.localeCompare(b.person.name, "tr", {
         sensitivity: "base",
       }),
     );
@@ -188,7 +188,7 @@ export function DayCell({ date, density = "compact" }: DayCellProps) {
       onDrop={onDrop}
       className={`${baseCell} group relative select-none ${cellVisual} text-zinc-800 hover:bg-zinc-100/80 dark:text-zinc-100 dark:hover:bg-zinc-800/70`}
       style={surfaceStyle}
-      aria-label={`${iso}, drop to add leave`}
+      aria-label={`${iso}, izin eklemek için bırakın`}
     >
       {density === "spacious" ? (
         <>
@@ -218,7 +218,7 @@ export function DayCell({ date, density = "compact" }: DayCellProps) {
               role="tooltip"
             >
               <p className="mb-1 text-[9px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                On leave
+                İzinde
               </p>
               <ul className="max-h-28 space-y-0.5 overflow-y-auto text-[10px] font-medium leading-snug text-zinc-800 dark:text-zinc-100">
                 {peopleForDay.map((person) => (

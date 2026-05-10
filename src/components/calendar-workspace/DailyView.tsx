@@ -2,15 +2,17 @@
 
 import { format, parseISO } from "date-fns";
 import { useMemo } from "react";
+import { dateFnsLocale } from "@/lib/date-locale";
 import { useCalendarStore, type Leave, type Person } from "@/stores";
 
 function formatLeaveSpan(startIso: string, endIso: string): string {
+  const localeOpts = { locale: dateFnsLocale };
   const a = parseISO(startIso);
   const b = parseISO(endIso);
   if (startIso === endIso) {
-    return format(a, "MMMM d, yyyy");
+    return format(a, "d MMMM yyyy", localeOpts);
   }
-  return `${format(a, "MMM d, yyyy")} → ${format(b, "MMM d, yyyy")}`;
+  return `${format(a, "d MMM yyyy", localeOpts)} → ${format(b, "d MMM yyyy", localeOpts)}`;
 }
 
 export function DailyView() {
@@ -29,14 +31,16 @@ export function DailyView() {
       })
       .filter((x): x is { leave: Leave; person: Person } => x !== null);
     list.sort((a, b) =>
-      a.person.name.localeCompare(b.person.name, undefined, {
+      a.person.name.localeCompare(b.person.name, "tr", {
         sensitivity: "base",
       }),
     );
     return list;
   }, [focusedDate, leaves, persons]);
 
-  const title = format(parseISO(focusedDate), "EEEE, MMMM d, yyyy");
+  const title = format(parseISO(focusedDate), "EEEE, d MMMM yyyy", {
+    locale: dateFnsLocale,
+  });
 
   return (
     <div className="mx-auto w-full max-w-md px-1">
@@ -45,13 +49,13 @@ export function DailyView() {
           {title}
         </h2>
         <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">
-          Leave overlapping this day
+          Bu günle örtüşen izinler
         </p>
       </header>
 
       {rows.length === 0 ? (
         <p className="rounded-xl border border-dashed border-zinc-200 bg-white/60 px-4 py-8 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400">
-          No one is on leave for this date.
+          Bu tarihte izinde olan kimse yok.
         </p>
       ) : (
         <ul className="flex flex-col gap-2">
@@ -71,7 +75,7 @@ export function DailyView() {
                 </p>
                 <p className="mt-0.5 text-xs leading-snug text-zinc-600 dark:text-zinc-400">
                   <span className="font-medium text-zinc-500 dark:text-zinc-500">
-                    Leave span
+                    İzin aralığı
                   </span>
                   <br />
                   {formatLeaveSpan(leave.startDate, leave.endDate)}

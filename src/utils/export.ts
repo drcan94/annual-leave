@@ -1,5 +1,13 @@
-import { differenceInCalendarDays, format, parseISO } from "date-fns";
+import {
+  differenceInCalendarDays,
+  format,
+  isValid,
+  parseISO,
+} from "date-fns";
+import { dateFnsLocale } from "@/lib/date-locale";
 import type { Leave, Person } from "@/stores";
+
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export type ExportRow = {
   personName: string;
@@ -19,9 +27,16 @@ function escapeTsvField(value: string): string {
   return value.replace(/\t/g, " ").replace(/\r?\n/g, " ");
 }
 
+function parseInclusiveIso(dateStr: string): Date | null {
+  if (!ISO_DATE_RE.test(dateStr)) return null;
+  const d = parseISO(dateStr);
+  return isValid(d) ? d : null;
+}
+
 /**
  * Builds export rows for all leaves that resolve to a person.
  * Total days are inclusive of both start and end dates.
+ * Rows with unparsable or reversed date ranges are skipped.
  */
 export function generateExportData(
   leaves: Leave[],
@@ -33,9 +48,12 @@ export function generateExportData(
     .map((leave) => {
       const person = byId.get(leave.personId);
       if (!person) return null;
-      const start = parseISO(leave.startDate);
-      const end = parseISO(leave.endDate);
+      const start = parseInclusiveIso(leave.startDate);
+      const end = parseInclusiveIso(leave.endDate);
+      if (!start || !end) return null;
+      if (leave.startDate > leave.endDate) return null;
       const totalDays = differenceInCalendarDays(end, start) + 1;
+      if (!Number.isFinite(totalDays) || totalDays <= 0) return null;
       return {
         personName: person.name,
         startDate: leave.startDate,
@@ -46,9 +64,9 @@ export function generateExportData(
     .filter((r): r is ExportRow => r !== null);
 
   rows.sort((a, b) => {
-    const byStart = a.startDate.localeCompare(b.startDate);
+    const byStart = a.startDate.localeCompare(b.startDate, "tr");
     if (byStart !== 0) return byStart;
-    return a.personName.localeCompare(b.personName, undefined, {
+    return a.personName.localeCompare(b.personName, "tr", {
       sensitivity: "base",
     });
   });
@@ -57,11 +75,14 @@ export function generateExportData(
 }
 
 const CSV_COLUMNS = [
-  "Person Name",
-  "Start Date",
-  "End Date",
-  "Total Days",
+  "Kişi Adı",
+  "Başlangıç Tarihi",
+  "Bitiş Tarihi",
+  "Toplam Gün",
 ] as const;
+
+/** UTF-8 BOM so Excel detects encoding for Turkish CSV. */
+export const CSV_UTF8_BOM = "\uFEFF";
 
 export function downloadCSV(data: ExportRow[]): void {
   const lines = [
@@ -75,12 +96,14 @@ export function downloadCSV(data: ExportRow[]): void {
       ].join(","),
     ),
   ];
-  const csv = lines.join("\r\n");
+  const csv = `${CSV_UTF8_BOM}${lines.join("\r\n")}`;
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = `leave-export-${format(new Date(), "yyyy-MM-dd-HHmm")}.csv`;
+  anchor.download = `izin-aktar-${format(new Date(), "yyyy-MM-dd-HHmm", {
+    locale: dateFnsLocale,
+  })}.csv`;
   anchor.rel = "noopener";
   document.body.appendChild(anchor);
   anchor.click();
@@ -100,6 +123,6 @@ export async function copyToClipboard(data: ExportRow[]): Promise<void> {
       ].join("\t"),
     ),
   ];
-  const tsv = lines.join("\n");
+  const tsv = `${CSV_UTF8_BOM}${lines.join("\n")}`;
   await navigator.clipboard.writeText(tsv);
 }

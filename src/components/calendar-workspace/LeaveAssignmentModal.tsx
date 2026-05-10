@@ -2,10 +2,11 @@
 
 import { format, parseISO } from "date-fns";
 import { useCallback, useEffect, useId, useState } from "react";
+import { dateFnsLocale } from "@/lib/date-locale";
 import { useCalendarStore } from "@/stores";
 
 function formatIsoReadable(iso: string): string {
-  return format(parseISO(iso), "MMMM d, yyyy");
+  return format(parseISO(iso), "d MMMM yyyy", { locale: dateFnsLocale });
 }
 
 export function LeaveAssignmentModal() {
@@ -42,22 +43,23 @@ export function LeaveAssignmentModal() {
 
   const onSave = useCallback(() => {
     if (!defaultStart) {
-      window.alert("Missing start date.");
+      window.alert("Başlangıç tarihi eksik.");
       return;
     }
     if (!personId) {
-      window.alert("Choose a person.");
+      window.alert("Bir kişi seçin.");
       return;
     }
     if (!endDate || endDate < defaultStart) {
-      window.alert("End date must be on or after the start date.");
+      window.alert("Bitiş tarihi başlangıç tarihiyle aynı veya daha sonra olmalıdır.");
       return;
     }
     try {
       addLeave(personId, defaultStart, endDate);
       closeModal();
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Could not save leave.";
+      const msg =
+        e instanceof Error ? e.message : "İzin kaydedilemedi. Tekrar deneyin.";
       window.alert(msg);
     }
   }, [addLeave, closeModal, defaultStart, endDate, personId]);
@@ -80,7 +82,7 @@ export function LeaveAssignmentModal() {
     >
       <button
         type="button"
-        aria-label="Close dialog"
+        aria-label="Pencereyi kapat"
         className="absolute inset-0 bg-zinc-950/50 backdrop-blur-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/40 dark:bg-black/60 dark:focus-visible:ring-white/30"
         onClick={onCancel}
       />
@@ -95,16 +97,16 @@ export function LeaveAssignmentModal() {
           id={headingId}
           className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50"
         >
-          Assign leave
+          İzin ata
         </h2>
         <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-          Confirm the person and end date for this range.
+          Kişiyi ve bu aralık için bitiş tarihini onaylayın.
         </p>
 
         <div className="mt-4 space-y-4">
           <div>
             <label className="block text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              Start date
+              Başlangıç tarihi
             </label>
             <p className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
               {readableStart}
@@ -116,7 +118,7 @@ export function LeaveAssignmentModal() {
               htmlFor="leave-end-date"
               className="block text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400"
             >
-              End date
+              Bitiş tarihi
             </label>
             <input
               id="leave-end-date"
@@ -133,11 +135,11 @@ export function LeaveAssignmentModal() {
               htmlFor="leave-person"
               className="block text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400"
             >
-              Person
+              Kişi
             </label>
             {persons.length === 0 ? (
               <p className="mt-1 text-sm text-amber-700 dark:text-amber-400">
-                Add someone in the sidebar before assigning leave.
+                İzin atamadan önce kenar çubuğundan bir kişi ekleyin.
               </p>
             ) : (
               <select
@@ -162,7 +164,7 @@ export function LeaveAssignmentModal() {
             onClick={onCancel}
             className="h-9 rounded-lg border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-800 transition-colors hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-500 dark:focus-visible:ring-offset-zinc-900"
           >
-            Cancel
+            İptal
           </button>
           <button
             type="button"
@@ -170,7 +172,7 @@ export function LeaveAssignmentModal() {
             onClick={onSave}
             className="h-9 rounded-lg bg-zinc-900 px-3 text-xs font-semibold text-white transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white dark:focus-visible:ring-zinc-500 dark:focus-visible:ring-offset-zinc-900"
           >
-            Save
+            Kaydet
           </button>
         </div>
       </div>

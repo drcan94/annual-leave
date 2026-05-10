@@ -1,4 +1,5 @@
 import { format, isBefore, parseISO } from "date-fns";
+import { dateFnsLocale } from "@/lib/date-locale";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -49,19 +50,19 @@ const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 function assertIsoDate(label: string, value: string): void {
   if (!ISO_DATE_RE.test(value)) {
     throw new Error(
-      `${label} must be a YYYY-MM-DD string; received: ${JSON.stringify(value)}`,
+      `${label}: YYYY-AA-GG biçiminde olmalıdır; gelen: ${JSON.stringify(value)}`,
     );
   }
   const t = Date.parse(`${value}T00:00:00.000Z`);
   if (Number.isNaN(t)) {
-    throw new Error(`${label} is not a valid calendar date: ${value}`);
+    throw new Error(`${label}: geçersiz takvim tarihi: ${value}`);
   }
 }
 
 function assertLeaveRange(startDate: string, endDate: string): void {
   if (startDate > endDate) {
     throw new Error(
-      `leave range invalid: startDate ${startDate} is after endDate ${endDate}`,
+      `İzin aralığı geçersiz: başlangıç (${startDate}) bitişten (${endDate}) sonra olamaz.`,
     );
   }
 }
@@ -117,7 +118,7 @@ function getInitialYear(): number {
 }
 
 function getTodayIsoDate(): string {
-  return format(new Date(), "yyyy-MM-dd");
+  return format(new Date(), "yyyy-MM-dd", { locale: dateFnsLocale });
 }
 
 const calendarStorage = createJSONStorage(() => {
@@ -154,7 +155,7 @@ export const useCalendarStore = create<CalendarStore>()(
       setCurrentYear: (year) => {
         if (!Number.isInteger(year)) {
           throw new Error(
-            `currentYear must be an integer; received: ${JSON.stringify(year)}`,
+            `Yıl bir tam sayı olmalıdır; gelen: ${JSON.stringify(year)}`,
           );
         }
         set({ currentYear: year });
@@ -163,10 +164,10 @@ export const useCalendarStore = create<CalendarStore>()(
       addPerson: (name, color) => {
         const trimmed = name.trim();
         if (!trimmed) {
-          throw new Error("addPerson: name cannot be empty");
+          throw new Error("Kişi adı boş olamaz.");
         }
-        if (!trimmed || typeof color !== "string" || !color.trim()) {
-          throw new Error("addPerson: color is required");
+        if (typeof color !== "string" || !color.trim()) {
+          throw new Error("Bir renk seçmelisiniz.");
         }
         const person: Person = {
           id: createId(),
@@ -179,16 +180,14 @@ export const useCalendarStore = create<CalendarStore>()(
       updatePerson: (id, name, color) => {
         const trimmed = name.trim();
         if (!trimmed) {
-          throw new Error("updatePerson: name cannot be empty");
+          throw new Error("Kişi adı boş olamaz.");
         }
         if (typeof color !== "string" || !color.trim()) {
-          throw new Error("updatePerson: color is required");
+          throw new Error("Bir renk seçmelisiniz.");
         }
         const { persons } = get();
         if (!persons.some((p) => p.id === id)) {
-          throw new Error(
-            `updatePerson: no person with id ${JSON.stringify(id)}`,
-          );
+          throw new Error(`Bu kimliğe sahip kişi bulunamadı: ${JSON.stringify(id)}`);
         }
         set((s) => ({
           persons: s.persons.map((p) =>
@@ -213,7 +212,7 @@ export const useCalendarStore = create<CalendarStore>()(
         const { persons } = get();
         if (!persons.some((p) => p.id === personId)) {
           throw new Error(
-            `addLeave: no person with id ${JSON.stringify(personId)}`,
+            `Bu kimliğe sahip kişi bulunamadı: ${JSON.stringify(personId)}`,
           );
         }
         const leave: Leave = {

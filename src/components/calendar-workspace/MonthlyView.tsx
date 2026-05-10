@@ -9,12 +9,16 @@ export function MonthlyView() {
   const anchor = parseISO(focusedDate);
 
   return (
-    <div className="mx-auto w-full max-w-6xl">
-      <MonthGrid
-        year={anchor.getFullYear()}
-        month={anchor.getMonth()}
-        density="spacious"
-      />
+    <div className="-mx-4 px-4 md:-mx-0 md:px-0">
+      <div className="mx-auto max-w-6xl overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
+        <div className="min-w-[800px] md:min-w-0">
+          <MonthGrid
+            year={anchor.getFullYear()}
+            month={anchor.getMonth()}
+            density="spacious"
+          />
+        </div>
+      </div>
     </div>
   );
 }

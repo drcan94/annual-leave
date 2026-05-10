@@ -1,7 +1,7 @@
 "use client";
 
 import { format, getISODay } from "date-fns";
-import { useCallback, useMemo, type CSSProperties } from "react";
+import { memo, useCallback, useMemo, type CSSProperties } from "react";
 import { useCalendarStore, type Leave, type Person } from "@/stores";
 import { getContrastYIQ } from "@/utils/colors";
 import { abbreviationLookup } from "@/utils/names";
@@ -10,6 +10,8 @@ type DayCellProps = {
   date: Date;
   /** Compact initials ribbons for dense grids; spacious bars for monthly. */
   density?: "compact" | "spacious";
+  /** Passed from MonthGrid so abbreviations are built once per month, not once per cell. */
+  abbrevLookup?: ReadonlyMap<string, string>;
 };
 
 function toIsoDateString(date: Date): string {
@@ -47,7 +49,11 @@ function hexWithAlpha(hex: string, alphaHex: string): string {
   return t;
 }
 
-export function DayCell({ date, density = "compact" }: DayCellProps) {
+function DayCellImpl({
+  date,
+  density = "compact",
+  abbrevLookup,
+}: DayCellProps) {
   const leaves = useCalendarStore((s) => s.leaves);
   const persons = useCalendarStore((s) => s.persons);
   const assignmentModalOpen = useCalendarStore((s) => s.assignmentModal.isOpen);
@@ -67,10 +73,10 @@ export function DayCell({ date, density = "compact" }: DayCellProps) {
     [dayLeaves, persons],
   );
 
-  const abbrevByPersonId = useMemo(
-    () => abbreviationLookup(persons),
-    [persons],
-  );
+  const abbrevByPersonId = useMemo(() => {
+    if (abbrevLookup != null) return abbrevLookup;
+    return abbreviationLookup(persons);
+  }, [abbrevLookup, persons]);
 
   const leaveBars = useMemo(() => {
     const rows = dayLeaves
@@ -267,3 +273,11 @@ export function DayCell({ date, density = "compact" }: DayCellProps) {
     </button>
   );
 }
+
+export const DayCell = memo(DayCellImpl, (prev, next) =>
+  prev.density === next.density &&
+  prev.date.getTime() === next.date.getTime() &&
+  prev.abbrevLookup === next.abbrevLookup,
+);
+
+DayCell.displayName = "DayCell";

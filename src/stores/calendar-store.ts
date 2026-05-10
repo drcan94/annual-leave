@@ -1,5 +1,6 @@
 import { format, isBefore, parseISO } from "date-fns";
 import { dateFnsLocale } from "@/lib/date-locale";
+import { createDebouncedLocalStorage } from "./create-debounced-local-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -148,7 +149,7 @@ const calendarStorage = createJSONStorage(() => {
       removeItem: () => {},
     };
   }
-  return window.localStorage;
+  return createDebouncedLocalStorage();
 });
 
 export const useCalendarStore = create<CalendarStore>()(

@@ -11,7 +11,10 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
+import { memo, useMemo } from "react";
 import { dateFnsLocale } from "@/lib/date-locale";
+import { useCalendarStore } from "@/stores";
+import { abbreviationLookup } from "@/utils/names";
 import { DayCell } from "./DayCell";
 
 /** Güvenilir bir Pazartesi (haftanın başlıkları için). */
@@ -35,11 +38,16 @@ function leadingEmptySlotCount(monthStart: Date): number {
   return (getDay(monthStart) + 6) % 7;
 }
 
-export function MonthGrid({
+function MonthGridImpl({
   year,
   month,
   density = "compact",
 }: MonthGridProps) {
+  const persons = useCalendarStore((s) => s.persons);
+  const abbrevLookup = useMemo(
+    () => abbreviationLookup(persons),
+    [persons],
+  );
   const monthAnchor = new Date(year, month, 1);
   const monthStart = startOfMonth(monthAnchor);
   const monthEnd = endOfMonth(monthAnchor);
@@ -89,10 +97,22 @@ export function MonthGrid({
                 : "flex w-full min-w-0"
             }
           >
-            <DayCell date={day} density={density} />
+            <DayCell
+              date={day}
+              density={density}
+              abbrevLookup={abbrevLookup}
+            />
           </div>
         ))}
       </div>
     </article>
   );
 }
+
+export const MonthGrid = memo(MonthGridImpl, (prev, next) =>
+  prev.year === next.year &&
+  prev.month === next.month &&
+  prev.density === next.density,
+);
+
+MonthGrid.displayName = "MonthGrid";

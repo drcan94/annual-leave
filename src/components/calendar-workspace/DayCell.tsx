@@ -4,6 +4,7 @@ import { format, getISODay } from "date-fns";
 import { useCallback, useMemo, type CSSProperties } from "react";
 import { useCalendarStore, type Leave, type Person } from "@/stores";
 import { getContrastYIQ } from "@/utils/colors";
+import { abbreviationLookup } from "@/utils/names";
 
 type DayCellProps = {
   date: Date;
@@ -38,18 +39,6 @@ function personsForLeaves(
   return ordered;
 }
 
-function initialsFromName(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  if (parts.length === 1) {
-    const w = parts[0];
-    return w.length > 0 ? w[0]!.toLocaleUpperCase("tr") : "?";
-  }
-  const first = parts[0]![0];
-  const last = parts[parts.length - 1]![0];
-  return `${first}${last}`.toLocaleUpperCase("tr");
-}
-
 function hexWithAlpha(hex: string, alphaHex: string): string {
   const t = hex.trim();
   if (/^#[0-9a-fA-F]{6}$/.test(t)) {
@@ -78,6 +67,11 @@ export function DayCell({ date, density = "compact" }: DayCellProps) {
     [dayLeaves, persons],
   );
 
+  const abbrevByPersonId = useMemo(
+    () => abbreviationLookup(persons),
+    [persons],
+  );
+
   const leaveBars = useMemo(() => {
     const rows = dayLeaves
       .map((leave) => {
@@ -102,16 +96,19 @@ export function DayCell({ date, density = "compact" }: DayCellProps) {
     iso >= selectionRange.start &&
     iso <= selectionRange.end;
 
-  const onMouseDown = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
-      if (assignmentModalOpen || e.button !== 0) return;
-      e.preventDefault();
+  const onPointerDown = useCallback(
+    (e: React.PointerEvent<HTMLButtonElement>) => {
+      if (assignmentModalOpen) return;
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      if (e.pointerType === "mouse") {
+        e.preventDefault();
+      }
       startSelection(iso);
     },
     [assignmentModalOpen, iso, startSelection],
   );
 
-  const onMouseEnter = useCallback(() => {
+  const onPointerEnter = useCallback(() => {
     if (!isSelecting) return;
     updateSelection(iso);
   }, [isSelecting, iso, updateSelection]);
@@ -195,11 +192,11 @@ export function DayCell({ date, density = "compact" }: DayCellProps) {
   return (
     <button
       type="button"
-      onMouseDown={onMouseDown}
-      onMouseEnter={onMouseEnter}
+      onPointerDown={onPointerDown}
+      onPointerEnter={onPointerEnter}
       onDragOver={onDragOver}
       onDrop={onDrop}
-      className={`${baseCell} group relative select-none ${cellVisual} text-zinc-800 hover:bg-zinc-100/80 dark:text-zinc-100 dark:hover:bg-zinc-800/70`}
+      className={`${baseCell} touch-manipulation group relative select-none ${cellVisual} text-zinc-800 hover:bg-zinc-100/80 dark:text-zinc-100 dark:hover:bg-zinc-800/70`}
       style={surfaceStyle}
       aria-label={`${iso}, izin eklemek için bırakın`}
     >
@@ -227,7 +224,7 @@ export function DayCell({ date, density = "compact" }: DayCellProps) {
         <>
           {density === "compact" && peopleForDay.length > 0 ? (
             <div
-              className="pointer-events-none invisible absolute bottom-full left-1/2 z-50 mb-1.5 w-max max-w-[min(14rem,calc(100vw-2rem))] -translate-x-1/2 rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-left shadow-md opacity-0 ring-1 ring-zinc-950/5 transition-opacity duration-150 dark:border-zinc-600 dark:bg-zinc-800 dark:ring-white/10 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
+              className="pointer-events-none invisible absolute bottom-full left-1/2 z-50 mb-1.5 w-max max-w-[min(14rem,calc(100vw-2rem))] -translate-x-1/2 rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-left opacity-0 shadow-md ring-1 ring-zinc-950/5 transition-all duration-0 group-hover:visible group-hover:opacity-100 group-hover:delay-150 group-hover:duration-200 dark:border-zinc-600 dark:bg-zinc-800 dark:ring-white/10 group-focus-within:visible group-focus-within:opacity-100 group-focus-within:delay-150 group-focus-within:duration-200"
               role="tooltip"
             >
               <p className="mb-1 text-[9px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
@@ -251,14 +248,14 @@ export function DayCell({ date, density = "compact" }: DayCellProps) {
               {peopleForDay.map((person) => (
                 <div
                   key={person.id}
-                  className="w-full truncate px-0.5 py-[2px] text-center text-[9px] font-bold leading-none"
+                  className="w-full truncate px-0.5 py-[2px] text-center text-[9px] font-semibold uppercase leading-none tracking-tighter"
                   style={{
                     backgroundColor: person.color,
                     color: getContrastYIQ(person.color),
                   }}
                   title={person.name}
                 >
-                  {initialsFromName(person.name)}
+                  {abbrevByPersonId.get(person.id) ?? "?"}
                 </div>
               ))}
             </div>

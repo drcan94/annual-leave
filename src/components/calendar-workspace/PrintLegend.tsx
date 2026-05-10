@@ -20,7 +20,7 @@ export function PrintLegend() {
     <div
       role="note"
       aria-label="Kişi renk eşlemesi"
-      className="hidden print:mt-8 print:flex print:flex-wrap print:gap-4 print:text-sm"
+      className="hidden print:mt-1 print:flex print:flex-shrink-0 print:flex-wrap print:gap-x-4 print:gap-y-1 print:text-[10px] print:leading-snug"
     >
       {rows.map((person) => (
         <div

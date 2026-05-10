@@ -25,16 +25,106 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Horizontal calendar strips: subtle scrollbar + optional overflow hint */
+.calendar-h-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(161 161 170 / 0.45) transparent;
+}
+
+.calendar-h-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.calendar-h-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.calendar-h-scroll::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background-color: rgb(161 161 170 / 0.45);
+}
+
+@media (prefers-color-scheme: dark) {
+  .calendar-h-scroll {
+    scrollbar-color: rgb(113 113 122 / 0.5) transparent;
+  }
+
+  .calendar-h-scroll::-webkit-scrollbar-thumb {
+    background-color: rgb(113 113 122 / 0.5);
+  }
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 @media print {
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+
+  html,
+  body {
+    width: 297mm;
+    height: 210mm;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    background: white !important;
+    color-scheme: light;
+  }
+
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-  body {
-    background: white;
+
+  /* “Kısmi / Özel” view: cram month tiles onto one sheet */
+  .print-calendar-tight .custom-month-grid {
+    gap: 0.35rem !important;
+    align-content: start;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   }
-  @page {
-    size: landscape;
-    margin: 1cm;
+
+  .print-calendar-tight .calendar-month-root {
+    padding: 0.3rem !important;
+    border-radius: 0.35rem !important;
+    box-shadow: none !important;
+  }
+
+  .print-calendar-tight .calendar-month-root h3 {
+    font-size: 0.6rem !important;
+    padding-bottom: 0.125rem !important;
+    margin: 0 !important;
+  }
+
+  .print-calendar-tight .calendar-month-root .grid {
+    margin-top: 0.125rem !important;
+    gap: 0.1rem !important;
+  }
+
+  .print-calendar-tight .calendar-month-root button.relative {
+    min-height: 0.55rem !important;
+    padding: 1px !important;
+    border-radius: 0.125rem !important;
+    font-size: 7px !important;
+    line-height: 1.05 !important;
+  }
+
+  .print-calendar-tight .calendar-month-root .flex.h-5.items-end {
+    height: 0.65rem !important;
+    padding-bottom: 0 !important;
+    font-size: 0.45rem !important;
+  }
+
+  /* Month toggles chrome hidden in print (selection is preserved for layout) */
+  .print-calendar-tight > div:first-child {
+    display: none !important;
   }
 }

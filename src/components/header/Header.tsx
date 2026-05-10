@@ -35,7 +35,7 @@ import {
 
 const VIEW_OPTIONS: readonly { id: CalendarView; label: string }[] = [
   { id: "yearly", label: "Yıllık" },
-  { id: "half-yearly", label: "Yarıyıl" },
+  { id: "custom", label: "Kısmi / Özel" },
   { id: "monthly", label: "Aylık" },
   { id: "weekly", label: "Haftalık" },
   { id: "daily", label: "Günlük" },
@@ -78,7 +78,7 @@ export function Header({
   }, [exportOpen]);
 
   const navLabel = useMemo(() => {
-    if (view === "yearly" || view === "half-yearly") {
+    if (view === "yearly" || view === "custom") {
       return String(currentYear);
     }
     const fd = parseISO(focusedDate);
@@ -96,7 +96,7 @@ export function Header({
   }, [view, currentYear, focusedDate]);
 
   const prevAria =
-    view === "yearly" || view === "half-yearly"
+    view === "yearly" || view === "custom"
       ? "Önceki yıl"
       : view === "monthly"
         ? "Önceki ay"
@@ -105,7 +105,7 @@ export function Header({
           : "Önceki gün";
 
   const nextAria =
-    view === "yearly" || view === "half-yearly"
+    view === "yearly" || view === "custom"
       ? "Sonraki yıl"
       : view === "monthly"
         ? "Sonraki ay"
@@ -114,7 +114,7 @@ export function Header({
           : "Sonraki gün";
 
   const goPrev = useCallback(() => {
-    if (view === "yearly" || view === "half-yearly") {
+    if (view === "yearly" || view === "custom") {
       setCurrentYear(currentYear - 1);
       return;
     }
@@ -134,7 +134,7 @@ export function Header({
   }, [view, currentYear, focusedDate, setCurrentYear, setFocusedDate]);
 
   const goNext = useCallback(() => {
-    if (view === "yearly" || view === "half-yearly") {
+    if (view === "yearly" || view === "custom") {
       setCurrentYear(currentYear + 1);
       return;
     }
@@ -224,15 +224,41 @@ export function Header({
             </button>
           ) : null}
 
-          <div className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+          <label className="flex min-w-0 flex-1 basis-[min(100%,12rem)] items-center gap-1.5 md:hidden">
+            <CalendarDays
+              className="size-4 shrink-0 text-zinc-500 dark:text-zinc-400"
+              aria-hidden
+            />
+            <span className="sr-only">Takvim görünümü</span>
+            <span className="relative min-w-0 flex-1">
+              <select
+                value={view}
+                onChange={(e) => setView(e.target.value as CalendarView)}
+                aria-label="Takvim görünümü"
+                className="h-8 w-full min-w-0 appearance-none rounded-md border border-zinc-200 bg-white py-1 pl-2 pr-8 text-[11px] font-medium text-zinc-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus-visible:ring-zinc-500 dark:focus-visible:ring-offset-zinc-950"
+              >
+                {VIEW_OPTIONS.map(({ id, label }) => (
+                  <option key={id} value={id}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-zinc-500 opacity-70 dark:text-zinc-400"
+                aria-hidden
+              />
+            </span>
+          </label>
+
+          <div className="hidden items-center gap-1.5 text-zinc-500 md:flex dark:text-zinc-400">
             <CalendarDays className="size-4 shrink-0" aria-hidden />
-            <span className="hidden text-[11px] font-semibold uppercase tracking-wide sm:inline">
+            <span className="text-[11px] font-semibold uppercase tracking-wide">
               Görünüm
             </span>
           </div>
 
           <div
-            className="inline-flex max-w-full flex-wrap rounded-md border border-zinc-200 bg-zinc-50 p-0.5 dark:border-zinc-700 dark:bg-zinc-900"
+            className="hidden max-w-full md:inline-flex md:rounded-md md:border md:border-zinc-200 md:bg-zinc-50 md:p-0.5 dark:md:border-zinc-700 dark:md:bg-zinc-900"
             role="group"
             aria-label="Takvim görünümü"
           >
@@ -258,24 +284,24 @@ export function Header({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 sm:justify-center">
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 sm:justify-center">
           <button
             type="button"
             onClick={goPrev}
-            className="inline-flex size-7 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1 focus-visible:ring-offset-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-900 dark:hover:text-zinc-50 dark:focus-visible:ring-zinc-500 dark:focus-visible:ring-offset-zinc-950"
+            className="inline-flex size-7 shrink-0 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1 focus-visible:ring-offset-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-900 dark:hover:text-zinc-50 dark:focus-visible:ring-zinc-500 dark:focus-visible:ring-offset-zinc-950"
             aria-label={prevAria}
           >
             <ChevronLeft className="size-4" />
           </button>
-          <div className="min-w-48 max-w-[20rem] px-1 text-center sm:min-w-[16rem]">
-            <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+          <div className="min-w-0 max-w-[min(100%,20rem)] flex-1 px-1 text-center sm:min-w-[16rem] sm:flex-none">
+            <span className="text-xs font-semibold leading-snug text-zinc-900 sm:text-sm dark:text-zinc-50">
               {navLabel}
             </span>
           </div>
           <button
             type="button"
             onClick={goNext}
-            className="inline-flex size-7 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1 focus-visible:ring-offset-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-900 dark:hover:text-zinc-50 dark:focus-visible:ring-zinc-500 dark:focus-visible:ring-offset-zinc-950"
+            className="inline-flex size-7 shrink-0 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1 focus-visible:ring-offset-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-900 dark:hover:text-zinc-50 dark:focus-visible:ring-zinc-500 dark:focus-visible:ring-offset-zinc-950"
             aria-label={nextAria}
           >
             <ChevronRight className="size-4" />

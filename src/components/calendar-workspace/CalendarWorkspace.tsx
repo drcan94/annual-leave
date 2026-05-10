@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useCalendarStore } from "@/stores";
 import { DailyView } from "./DailyView";
-import { HalfYearlyView } from "./HalfYearlyView";
+import { CustomMonthsView } from "./CustomMonthsView";
 import { LeaveAssignmentModal } from "./LeaveAssignmentModal";
 import { MonthlyView } from "./MonthlyView";
 import { WeeklyView } from "./WeeklyView";
@@ -27,8 +27,9 @@ function useFinalizeRangeSelection() {
       }
     };
 
-    document.addEventListener("mouseup", finalizeRangeSelection);
-    return () => document.removeEventListener("mouseup", finalizeRangeSelection);
+    document.addEventListener("pointerup", finalizeRangeSelection);
+    return () =>
+      document.removeEventListener("pointerup", finalizeRangeSelection);
   }, [isSelecting]);
 }
 
@@ -41,8 +42,8 @@ export function CalendarWorkspace() {
     switch (view) {
       case "yearly":
         return <YearlyView />;
-      case "half-yearly":
-        return <HalfYearlyView />;
+      case "custom":
+        return <CustomMonthsView />;
       case "monthly":
         return <MonthlyView />;
       case "weekly":
@@ -55,9 +56,9 @@ export function CalendarWorkspace() {
   })();
 
   return (
-    <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-auto bg-zinc-50/40 print:w-full print:overflow-visible dark:bg-zinc-950/30">
+    <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-x-hidden bg-zinc-50/40 print:w-full print:min-h-0 print:flex-1 print:overflow-hidden print:bg-white dark:bg-zinc-950/30">
       <LeaveAssignmentModal />
-      <div className="min-h-0 w-full flex-1 p-4 print:w-full print:overflow-visible md:p-5 xl:p-6">
+      <div className="relative min-h-0 w-full flex-1 p-4 print:flex print:min-h-0 print:flex-1 print:flex-col print:overflow-hidden print:p-3 print:bg-white md:p-5 xl:p-6">
         {body}
         <PrintLegend />
       </div>

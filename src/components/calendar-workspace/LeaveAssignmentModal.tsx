@@ -3,49 +3,56 @@
 import { format, parseISO } from "date-fns";
 import { useCallback, useEffect, useId, useState } from "react";
 import { dateFnsLocale } from "@/lib/date-locale";
+import type { Person } from "@/stores";
 import { useCalendarStore } from "@/stores";
 
 function formatIsoReadable(iso: string): string {
   return format(parseISO(iso), "d MMMM yyyy", { locale: dateFnsLocale });
 }
 
-export function LeaveAssignmentModal() {
-  const assignmentModal = useCalendarStore((s) => s.assignmentModal);
-  const persons = useCalendarStore((s) => s.persons);
-  const addLeave = useCalendarStore((s) => s.addLeave);
-  const closeModal = useCalendarStore((s) => s.closeModal);
+function preferredPersonId(
+  persons: Person[],
+  defaultPersonId: string | undefined,
+): string {
+  return (
+    (defaultPersonId && persons.some((p) => p.id === defaultPersonId)
+      ? defaultPersonId
+      : undefined) ?? persons[0]?.id ?? ""
+  );
+}
 
+type ModalFormProps = {
+  persons: Person[];
+  defaultPersonId?: string;
+  defaultStart: string;
+  defaultEnd?: string;
+  addLeave: (personId: string, startDate: string, endDate: string) => void;
+  closeModal: () => void;
+};
+
+function LeaveAssignmentModalForm({
+  persons,
+  defaultPersonId,
+  defaultStart,
+  defaultEnd,
+  addLeave,
+  closeModal,
+}: ModalFormProps) {
   const headingId = useId();
-  const [personId, setPersonId] = useState("");
-  const [endDate, setEndDate] = useState("");
-
-  const { isOpen, defaultPersonId, defaultStart, defaultEnd } = assignmentModal;
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const nextEnd = defaultEnd ?? "";
-    setEndDate(nextEnd);
-    const preferred =
-      (defaultPersonId && persons.some((p) => p.id === defaultPersonId)
-        ? defaultPersonId
-        : undefined) ?? persons[0]?.id ?? "";
-    setPersonId(preferred);
-  }, [isOpen, defaultPersonId, defaultEnd, persons]);
+  const [personId, setPersonId] = useState(() =>
+    preferredPersonId(persons, defaultPersonId),
+  );
+  const [endDate, setEndDate] = useState(() => defaultEnd ?? "");
 
   useEffect(() => {
-    if (!isOpen) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeModal();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [isOpen, closeModal]);
+  }, [closeModal]);
 
   const onSave = useCallback(() => {
-    if (!defaultStart) {
-      window.alert("Başlangıç tarihi eksik.");
-      return;
-    }
     if (!personId) {
       window.alert("Bir kişi seçin.");
       return;
@@ -68,16 +75,12 @@ export function LeaveAssignmentModal() {
     closeModal();
   }, [closeModal]);
 
-  if (!isOpen || !defaultStart) {
-    return null;
-  }
-
   const readableStart = formatIsoReadable(defaultStart);
   const canSave = persons.length > 0 && Boolean(personId);
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:items-center sm:py-8"
       role="presentation"
     >
       <button
@@ -91,7 +94,7 @@ export function LeaveAssignmentModal() {
         role="dialog"
         aria-modal="true"
         aria-labelledby={headingId}
-        className="relative z-10 w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-5 text-zinc-900 shadow-xl shadow-zinc-950/15 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+        className="relative z-10 m-4 w-[calc(100vw-2rem)] max-h-[85dvh] max-w-md overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-5 text-zinc-900 shadow-xl shadow-zinc-950/15 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
       >
         <h2
           id={headingId}
@@ -177,5 +180,31 @@ export function LeaveAssignmentModal() {
         </div>
       </div>
     </div>
+  );
+}
+
+export function LeaveAssignmentModal() {
+  const assignmentModal = useCalendarStore((s) => s.assignmentModal);
+  const persons = useCalendarStore((s) => s.persons);
+  const addLeave = useCalendarStore((s) => s.addLeave);
+  const closeModal = useCalendarStore((s) => s.closeModal);
+
+  const { isOpen, sessionId, defaultPersonId, defaultStart, defaultEnd } =
+    assignmentModal;
+
+  if (!isOpen || !defaultStart) {
+    return null;
+  }
+
+  return (
+    <LeaveAssignmentModalForm
+      key={sessionId ?? 0}
+      persons={persons}
+      defaultPersonId={defaultPersonId}
+      defaultStart={defaultStart}
+      defaultEnd={defaultEnd}
+      addLeave={addLeave}
+      closeModal={closeModal}
+    />
   );
 }

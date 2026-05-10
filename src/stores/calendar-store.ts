@@ -6,10 +6,22 @@ import { createJSONStorage, persist } from "zustand/middleware";
 /** View modes supported by the calendar UI (routing concerns stay out of the store). */
 export type CalendarView =
   | "yearly"
-  | "half-yearly"
+  | "custom"
   | "monthly"
   | "weekly"
   | "daily";
+
+const DEFAULT_SELECTED_MONTHS = [0, 1, 2, 3, 4, 5];
+
+function normalizeHydratedMonths(value: unknown): number[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const next = value.filter(
+    (m): m is number =>
+      typeof m === "number" && Number.isInteger(m) && m >= 0 && m <= 11,
+  );
+  if (next.length !== value.length) return undefined;
+  return next;
+}
 
 export interface Person {
   id: string;
@@ -34,6 +46,8 @@ export type DateSelectionRange = {
 
 export type AssignmentModalState = {
   isOpen: boolean;
+  /** Bumps each time the modal opens; used to reset ephemeral form UI state. */
+  sessionId?: number;
   defaultPersonId?: string;
   defaultStart?: string;
   defaultEnd?: string;
@@ -80,6 +94,8 @@ function createId(): string {
 export interface CalendarState {
   currentYear: number;
   view: CalendarView;
+  /** Month indices `0 … 11` included in custom multi-month view / print selection. */
+  selectedMonths: number[];
   persons: Person[];
   leaves: Leave[];
   /** Inclusive range, always chronological (start ≤ end). */
@@ -94,6 +110,9 @@ export interface CalendarState {
 
 export interface CalendarActions {
   setView: (view: CalendarView) => void;
+  toggleSelectedMonth: (monthIndex: number) => void;
+  selectAllMonths: () => void;
+  clearSelectedMonths: () => void;
   setCurrentYear: (year: number) => void;
   addPerson: (name: string, color: string) => void;
   updatePerson: (id: string, name: string, color: string) => void;
@@ -137,6 +156,7 @@ export const useCalendarStore = create<CalendarStore>()(
     (set, get) => ({
       currentYear: getInitialYear(),
       view: "yearly",
+      selectedMonths: [...DEFAULT_SELECTED_MONTHS],
       persons: [],
       leaves: [],
       selectionRange: { start: null, end: null },
@@ -146,6 +166,30 @@ export const useCalendarStore = create<CalendarStore>()(
       focusedDate: getTodayIsoDate(),
 
       setView: (view) => set({ view }),
+
+      toggleSelectedMonth: (monthIndex) => {
+        if (!Number.isInteger(monthIndex) || monthIndex < 0 || monthIndex > 11) {
+          throw new Error(
+            `Ay indeksi 0–11 olmalıdır; gelen: ${JSON.stringify(monthIndex)}`,
+          );
+        }
+        set((s) => {
+          const setLike = new Set(s.selectedMonths);
+          if (setLike.has(monthIndex)) {
+            setLike.delete(monthIndex);
+          } else {
+            setLike.add(monthIndex);
+          }
+          const next = [...setLike];
+          next.sort((a, b) => a - b);
+          return { selectedMonths: next };
+        });
+      },
+
+      selectAllMonths: () =>
+        set({ selectedMonths: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] }),
+
+      clearSelectedMonths: () => set({ selectedMonths: [] }),
 
       setFocusedDate: (date) => {
         assertIsoDate("focusedDate", date);
@@ -286,17 +330,19 @@ export const useCalendarStore = create<CalendarStore>()(
           nextRange = { start: defaultStart, end: defaultEnd };
         }
 
-        set({
+        set((state) => ({
           isSelecting: false,
           selectionAnchor: null,
           selectionRange: nextRange,
           assignmentModal: {
             isOpen: true,
+            sessionId:
+              (state.assignmentModal.sessionId ?? 0) + 1,
             defaultPersonId,
             defaultStart,
             defaultEnd,
           },
-        });
+        }));
       },
 
       closeModal: () =>
@@ -309,14 +355,75 @@ export const useCalendarStore = create<CalendarStore>()(
     }),
     {
       name: STORAGE_KEY,
+      version: 1,
       storage: calendarStorage,
       partialize: (state) => ({
         currentYear: state.currentYear,
         view: state.view,
+        selectedMonths: state.selectedMonths,
         persons: state.persons,
         leaves: state.leaves,
         focusedDate: state.focusedDate,
       }),
+      migrate: (persistedState, fromVersion) => {
+        void fromVersion;
+        const raw = persistedState as {
+          view?: unknown;
+          selectedMonths?: unknown;
+          [key: string]: unknown;
+        };
+        const viewStr = typeof raw.view === "string" ? raw.view : "";
+        const view: CalendarView | undefined =
+          viewStr === "half-yearly"
+            ? "custom"
+            : viewStr === "yearly" ||
+                viewStr === "custom" ||
+                viewStr === "monthly" ||
+                viewStr === "weekly" ||
+                viewStr === "daily"
+              ? viewStr
+              : undefined;
+        const selectedMonths =
+          normalizeHydratedMonths(raw.selectedMonths) ??
+          [...DEFAULT_SELECTED_MONTHS];
+        const { selectedMonths: _sm, view: _v, ...rest } = raw;
+        void _sm;
+        void _v;
+        return {
+          ...rest,
+          ...(view !== undefined ? { view } : {}),
+          selectedMonths,
+        };
+      },
+      merge: (persistedState, currentState) => {
+        type PersistedPartial = Partial<
+          Pick<
+            CalendarState,
+            | "currentYear"
+            | "persons"
+            | "leaves"
+            | "focusedDate"
+            | "selectedMonths"
+          >
+        > & { view?: string };
+        const persisted = (persistedState ?? {}) as PersistedPartial;
+        const view: CalendarView =
+          persisted.view === "half-yearly"
+            ? "custom"
+            : (persisted.view as CalendarView | undefined) ?? currentState.view;
+        const normalizedMonths = normalizeHydratedMonths(persisted.selectedMonths);
+        const selectedMonths =
+          normalizedMonths !== undefined
+            ? [...normalizedMonths].sort((a, b) => a - b)
+            : [...DEFAULT_SELECTED_MONTHS];
+
+        return {
+          ...currentState,
+          ...persisted,
+          view,
+          selectedMonths,
+        };
+      },
     },
   ),
 );

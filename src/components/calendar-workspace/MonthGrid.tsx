@@ -57,7 +57,7 @@ export function MonthGrid({
 
   return (
     <article
-      className="rounded-2xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm shadow-zinc-950/5 ring-1 ring-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-900/60 dark:shadow-none dark:ring-white/10"
+      className="calendar-month-root rounded-2xl border border-zinc-200/90 bg-white/90 p-4 shadow-sm shadow-zinc-950/5 ring-1 ring-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-900/60 dark:shadow-none dark:ring-white/10"
       aria-label={`${format(monthStart, "MMMM yyyy", localeOpts)}, ${daysInMonth} gün`}
     >
       <h3 className="border-b border-zinc-100 pb-2 text-sm font-semibold tracking-tight text-zinc-900 dark:border-zinc-800 dark:text-zinc-50">

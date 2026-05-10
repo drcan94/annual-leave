@@ -57,7 +57,7 @@ export function ConfirmDialog({
 
   return (
     <div
-      className="fixed inset-0 z-100 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto p-4 sm:items-center sm:py-8"
       role="presentation"
     >
       <button
@@ -72,7 +72,7 @@ export function ConfirmDialog({
         aria-modal="true"
         aria-labelledby={headingId}
         aria-describedby={descId}
-        className="relative z-10 w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-5 text-zinc-900 shadow-xl shadow-zinc-950/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+        className="relative z-10 m-4 w-[calc(100vw-2rem)] max-h-[85dvh] max-w-md overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-5 text-zinc-900 shadow-xl shadow-zinc-950/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
       >
         <h2
           id={headingId}

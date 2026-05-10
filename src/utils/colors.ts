@@ -118,3 +118,17 @@ export function generateDistinctColor(existingColors: string[]): string {
 
   return bestHex;
 }
+
+/**
+ * Returns black or white for readable text on `hexcolor` using YIQ luminance.
+ * Light backgrounds → `#000000`, dark backgrounds → `#FFFFFF`.
+ */
+export function getContrastYIQ(hexcolor: string): "#000000" | "#FFFFFF" {
+  const n = normalizeHex(hexcolor);
+  if (!n) return "#000000";
+  const r = parseInt(n.slice(1, 3), 16);
+  const g = parseInt(n.slice(3, 5), 16);
+  const b = parseInt(n.slice(5, 7), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 128 ? "#000000" : "#FFFFFF";
+}

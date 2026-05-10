@@ -7,6 +7,7 @@ import { HalfYearlyView } from "./HalfYearlyView";
 import { LeaveAssignmentModal } from "./LeaveAssignmentModal";
 import { MonthlyView } from "./MonthlyView";
 import { WeeklyView } from "./WeeklyView";
+import { PrintLegend } from "./PrintLegend";
 import { YearlyView } from "./YearlyView";
 
 function useFinalizeRangeSelection() {
@@ -54,9 +55,12 @@ export function CalendarWorkspace() {
   })();
 
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col overflow-auto bg-zinc-50/40 dark:bg-zinc-950/30">
+    <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-auto bg-zinc-50/40 print:w-full print:overflow-visible dark:bg-zinc-950/30">
       <LeaveAssignmentModal />
-      <div className="min-h-0 flex-1 p-4 md:p-5 xl:p-6">{body}</div>
+      <div className="min-h-0 w-full flex-1 p-4 print:w-full print:overflow-visible md:p-5 xl:p-6">
+        {body}
+        <PrintLegend />
+      </div>
     </div>
   );
 }

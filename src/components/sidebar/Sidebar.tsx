@@ -122,7 +122,7 @@ export function Sidebar({
   );
 
   const asideCn = [
-    "flex min-h-0 flex-col border-r border-zinc-200/80 bg-zinc-50/90 transition-transform duration-200 ease-out dark:border-zinc-800/80 dark:bg-zinc-950/50",
+    "print:hidden flex min-h-0 flex-col border-r border-zinc-200/80 bg-zinc-50/90 transition-transform duration-200 ease-out dark:border-zinc-800/80 dark:bg-zinc-950/50",
     "max-md:fixed max-md:left-0 max-md:top-0 max-md:z-[50] max-md:h-svh max-md:w-[min(264px,calc(100vw-40px))] max-md:bg-zinc-50 max-md:shadow-2xl max-md:backdrop-blur-sm max-md:dark:bg-zinc-950",
     mobileDrawerOpen
       ? "max-md:translate-x-0 max-md:opacity-100"

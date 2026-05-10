@@ -8,6 +8,7 @@ import {
   ClipboardCopy,
   Download,
   FileDown,
+  Printer,
   RotateCcw,
   Users,
 } from "lucide-react";
@@ -189,7 +190,7 @@ export function Header({
   }, [resetAllData]);
 
   const headerCn = [
-    "relative z-[60] flex flex-col gap-2 border-b border-zinc-200/80 bg-white/90 px-3 py-2 backdrop-blur-sm dark:border-zinc-800/80 dark:bg-zinc-950/90 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-4",
+    "relative z-[60] flex flex-col gap-2 border-b border-zinc-200/80 bg-white/90 px-3 py-2 backdrop-blur-sm print:hidden dark:border-zinc-800/80 dark:bg-zinc-950/90 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-4",
     className,
   ]
     .filter(Boolean)
@@ -347,6 +348,19 @@ export function Header({
                     aria-hidden
                   />
                   Panoya Kopyala
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-[11px] font-medium text-zinc-800 hover:bg-zinc-50 focus:bg-zinc-50 focus:outline-none focus-visible:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-inset dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus-visible:bg-zinc-800 dark:focus-visible:ring-zinc-500"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    closeExportSoon();
+                    window.print();
+                  }}
+                >
+                  <Printer className="size-3.5 shrink-0 opacity-70" aria-hidden />
+                  Takvimi Yazdır
                 </button>
               </div>
             ) : null}

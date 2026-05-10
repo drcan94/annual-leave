@@ -3,10 +3,11 @@
 import { format, getISODay } from "date-fns";
 import { useCallback, useMemo, type CSSProperties } from "react";
 import { useCalendarStore, type Leave, type Person } from "@/stores";
+import { getContrastYIQ } from "@/utils/colors";
 
 type DayCellProps = {
   date: Date;
-  /** Compact dots for yearly grids; spacious bars for monthly. */
+  /** Compact initials ribbons for dense grids; spacious bars for monthly. */
   density?: "compact" | "spacious";
 };
 
@@ -35,6 +36,18 @@ function personsForLeaves(
     }
   }
   return ordered;
+}
+
+function initialsFromName(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) {
+    const w = parts[0];
+    return w.length > 0 ? w[0]!.toLocaleUpperCase("tr") : "?";
+  }
+  const first = parts[0]![0];
+  const last = parts[parts.length - 1]![0];
+  return `${first}${last}`.toLocaleUpperCase("tr");
 }
 
 function hexWithAlpha(hex: string, alphaHex: string): string {
@@ -124,7 +137,7 @@ export function DayCell({ date, density = "compact" }: DayCellProps) {
   );
 
   const baseCellCompact =
-    "relative flex size-8 flex-col items-center justify-between rounded-md border border-transparent text-[11px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-zinc-400 dark:focus-visible:outline-zinc-500";
+    "relative flex min-h-8 w-full min-w-0 flex-col items-stretch justify-between overflow-hidden rounded-md border border-transparent text-[11px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-zinc-400 dark:focus-visible:outline-zinc-500";
 
   const baseCellSpacious =
     "relative flex min-h-[100px] w-full min-w-0 flex-col items-stretch rounded-lg border border-transparent p-1.5 text-left text-[11px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-zinc-400 dark:focus-visible:outline-zinc-500";
@@ -229,17 +242,26 @@ export function DayCell({ date, density = "compact" }: DayCellProps) {
               </ul>
             </div>
           ) : null}
-          <span className="leading-none">{dayNum}</span>
-          {peopleForDay.length > 1 ? (
-            <span className="flex max-w-full gap-0.5 px-0.5 pb-0.5" aria-hidden>
+          <span className="shrink-0 self-center leading-none">{dayNum}</span>
+          {peopleForDay.length > 0 ? (
+            <div
+              className="mt-0.5 flex w-full shrink-0 flex-col gap-px overflow-hidden"
+              aria-label="İzindeki kişiler"
+            >
               {peopleForDay.map((person) => (
-                <span
+                <div
                   key={person.id}
-                  className="size-1 shrink-0 rounded-full ring-1 ring-black/10 dark:ring-white/20"
-                  style={{ backgroundColor: person.color }}
-                />
+                  className="w-full truncate px-0.5 py-[2px] text-center text-[9px] font-bold leading-none"
+                  style={{
+                    backgroundColor: person.color,
+                    color: getContrastYIQ(person.color),
+                  }}
+                  title={person.name}
+                >
+                  {initialsFromName(person.name)}
+                </div>
               ))}
-            </span>
+            </div>
           ) : (
             <span className="h-1.5 shrink-0" aria-hidden />
           )}

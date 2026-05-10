@@ -51,7 +51,7 @@ export function MonthGrid({
   const gridGap = isSpacious ? "gap-1" : "gap-x-0.5 gap-y-1";
   const padCellClass = isSpacious
     ? "min-h-[100px] min-w-0 shrink-0"
-    : "size-8 shrink-0";
+    : "min-h-8 w-full min-w-0 shrink-0";
 
   const localeOpts = { locale: dateFnsLocale };
 
@@ -86,7 +86,7 @@ export function MonthGrid({
             className={
               isSpacious
                 ? "flex min-h-[100px] min-w-0"
-                : "flex justify-center"
+                : "flex w-full min-w-0"
             }
           >
             <DayCell date={day} density={density} />

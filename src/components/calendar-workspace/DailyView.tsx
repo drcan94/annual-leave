@@ -43,8 +43,8 @@ export function DailyView() {
   });
 
   return (
-    <div className="mx-auto w-full max-w-md px-1">
-      <header className="mb-4 border-b border-zinc-200/80 pb-3 dark:border-zinc-800">
+    <div className="mx-auto w-full max-w-md px-1 print:flex print:h-full print:min-h-0 print:max-w-none print:flex-1 print:flex-col print:overflow-hidden print:px-3">
+      <header className="mb-4 shrink-0 border-b border-zinc-200/80 pb-3 print:mb-2 print:border-zinc-300 dark:border-zinc-800">
         <h2 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           {title}
         </h2>
@@ -54,15 +54,15 @@ export function DailyView() {
       </header>
 
       {rows.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-zinc-200 bg-white/60 px-4 py-8 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400">
+        <p className="rounded-xl border border-dashed border-zinc-200 bg-white/60 px-4 py-8 text-center text-sm text-zinc-500 print:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-400">
           Bu tarihte izinde olan kimse yok.
         </p>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto print:min-h-0 print:overflow-hidden print:pb-0">
           {rows.map(({ leave, person }) => (
             <li
               key={leave.id}
-              className="flex gap-3 rounded-xl border border-zinc-200/90 bg-white/90 p-3 shadow-sm ring-1 ring-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-900/60 dark:ring-white/10"
+              className="flex gap-3 rounded-xl border border-zinc-200/90 bg-white/90 p-3 shadow-sm ring-1 ring-zinc-950/5 print:border-zinc-300 print:shadow-none print:ring-0 dark:border-zinc-800 dark:bg-zinc-900/60 dark:ring-white/10"
             >
               <span
                 className="mt-0.5 size-3 shrink-0 rounded-full ring-2 ring-white dark:ring-zinc-900"

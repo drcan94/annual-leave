@@ -20,15 +20,15 @@ export function PrintLegend() {
     <div
       role="note"
       aria-label="Kişi renk eşlemesi"
-      className="hidden print:mt-1 print:flex print:flex-shrink-0 print:flex-wrap print:gap-x-4 print:gap-y-1 print:text-[10px] print:leading-snug"
+      className="hidden print:mt-2 print:flex print:shrink-0 print:flex-wrap print:gap-x-4 print:gap-y-1 print:border-t print:border-zinc-300 print:pt-1.5 print:text-[10px] print:leading-snug"
     >
       {rows.map((person) => (
         <div
           key={person.id}
-          className="inline-flex max-w-56 items-center gap-2"
+          className="inline-flex max-w-56 items-center gap-2 print:max-w-none print:gap-1.5"
         >
           <span
-            className="size-3 shrink-0 rounded-sm ring-1 ring-zinc-900/20"
+            className="size-3 shrink-0 rounded-sm ring-1 ring-zinc-900/20 print:ring-zinc-300"
             style={{ backgroundColor: person.color }}
             aria-hidden
           />

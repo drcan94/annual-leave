@@ -140,10 +140,10 @@ function DayCellImpl({
   );
 
   const baseCellCompact =
-    "relative flex min-h-8 w-full min-w-0 flex-col items-stretch justify-between overflow-hidden rounded-md border border-transparent text-[11px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-zinc-400 dark:focus-visible:outline-zinc-500";
+    "relative flex min-h-8 w-full min-w-0 flex-col items-stretch justify-between overflow-hidden rounded-md border border-transparent text-[11px] font-medium transition-colors print:h-full print:min-h-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-zinc-400 dark:focus-visible:outline-zinc-500";
 
   const baseCellSpacious =
-    "relative flex min-h-[100px] w-full min-w-0 flex-col items-stretch rounded-lg border border-transparent p-1.5 text-left text-[11px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-zinc-400 dark:focus-visible:outline-zinc-500";
+    "relative flex min-h-[100px] w-full min-w-0 flex-col items-stretch rounded-lg border border-transparent p-1.5 text-left text-[11px] font-medium transition-colors print:h-full print:min-h-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-zinc-400 dark:focus-visible:outline-zinc-500";
 
   const baseCell = density === "spacious" ? baseCellSpacious : baseCellCompact;
 
@@ -202,20 +202,20 @@ function DayCellImpl({
       onPointerEnter={onPointerEnter}
       onDragOver={onDragOver}
       onDrop={onDrop}
-      className={`${baseCell} touch-manipulation group relative select-none ${cellVisual} text-zinc-800 hover:bg-zinc-100/80 dark:text-zinc-100 dark:hover:bg-zinc-800/70`}
+      className={`${baseCell} touch-manipulation group relative select-none ${cellVisual} text-zinc-800 hover:bg-zinc-100/80 print:border-zinc-300 print:shadow-none dark:text-zinc-100 dark:hover:bg-zinc-800/70`}
       style={surfaceStyle}
       aria-label={`${iso}, izin eklemek için bırakın`}
     >
       {density === "spacious" ? (
         <>
-          <span className="shrink-0 text-xs font-semibold tabular-nums text-zinc-800 dark:text-zinc-100">
+          <span className="shrink-0 text-xs font-semibold tabular-nums text-zinc-800 print:text-xs dark:text-zinc-100">
             {dayNum}
           </span>
-          <div className="mt-1 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
+          <div className="mt-1 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto print:mt-0.5 print:gap-0.5 print:overflow-hidden">
             {leaveBars.map(({ leave, person }) => (
               <div
                 key={leave.id}
-                className="w-full min-w-0 truncate rounded-md px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-zinc-900 shadow-sm ring-1 ring-black/10 dark:text-zinc-950 dark:ring-white/15"
+                className="w-full min-w-0 truncate rounded-md px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-zinc-900 shadow-sm ring-1 ring-black/10 print:px-1 print:py-0 print:text-[8px] print:leading-tight print:ring-zinc-300 dark:text-zinc-950 dark:ring-white/15"
                 style={{
                   backgroundColor: hexWithAlpha(person.color, "AA"),
                 }}
@@ -230,7 +230,7 @@ function DayCellImpl({
         <>
           {density === "compact" && peopleForDay.length > 0 ? (
             <div
-              className="pointer-events-none invisible absolute bottom-full left-1/2 z-50 mb-1.5 w-max max-w-[min(14rem,calc(100vw-2rem))] -translate-x-1/2 rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-left opacity-0 shadow-md ring-1 ring-zinc-950/5 transition-all duration-0 group-hover:visible group-hover:opacity-100 group-hover:delay-150 group-hover:duration-200 dark:border-zinc-600 dark:bg-zinc-800 dark:ring-white/10 group-focus-within:visible group-focus-within:opacity-100 group-focus-within:delay-150 group-focus-within:duration-200"
+              className="pointer-events-none invisible absolute bottom-full left-1/2 z-50 mb-1.5 w-max max-w-[min(14rem,calc(100vw-2rem))] -translate-x-1/2 rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-left opacity-0 shadow-md ring-1 ring-zinc-950/5 transition-all duration-0 print:hidden group-hover:visible group-hover:opacity-100 group-hover:delay-150 group-hover:duration-200 dark:border-zinc-600 dark:bg-zinc-800 dark:ring-white/10 group-focus-within:visible group-focus-within:opacity-100 group-focus-within:delay-150 group-focus-within:duration-200"
               role="tooltip"
             >
               <p className="mb-1 text-[9px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
@@ -245,16 +245,18 @@ function DayCellImpl({
               </ul>
             </div>
           ) : null}
-          <span className="shrink-0 self-center leading-none">{dayNum}</span>
+          <span className="shrink-0 self-center leading-none print:text-[10px]">
+            {dayNum}
+          </span>
           {peopleForDay.length > 0 ? (
             <div
-              className="mt-0.5 flex w-full shrink-0 flex-col gap-px overflow-hidden"
+              className="mt-0.5 flex w-full shrink-0 flex-col gap-px overflow-hidden print:mt-px"
               aria-label="İzindeki kişiler"
             >
               {peopleForDay.map((person) => (
                 <div
                   key={person.id}
-                  className="w-full truncate px-0.5 py-[2px] text-center text-[9px] font-semibold uppercase leading-none tracking-tighter"
+                  className="w-full truncate px-0.5 py-[2px] text-center text-[9px] font-semibold uppercase leading-none tracking-tighter print:py-0 print:text-[7px]"
                   style={{
                     backgroundColor: person.color,
                     color: getContrastYIQ(person.color),

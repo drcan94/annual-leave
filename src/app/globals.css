@@ -66,16 +66,16 @@ body {
 @media print {
   @page {
     size: A4 landscape;
-    margin: 8mm;
+    margin: 5mm;
   }
 
   html,
   body {
-    width: 297mm;
-    height: 210mm;
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
     background: white !important;
     color-scheme: light;
   }
@@ -85,46 +85,20 @@ body {
     print-color-adjust: exact !important;
   }
 
-  /* “Kısmi / Özel” view: cram month tiles onto one sheet */
-  .print-calendar-tight .custom-month-grid {
-    gap: 0.35rem !important;
-    align-content: start;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  }
-
-  .print-calendar-tight .calendar-month-root {
-    padding: 0.3rem !important;
-    border-radius: 0.35rem !important;
-    box-shadow: none !important;
-  }
-
-  .print-calendar-tight .calendar-month-root h3 {
-    font-size: 0.6rem !important;
-    padding-bottom: 0.125rem !important;
-    margin: 0 !important;
-  }
-
-  .print-calendar-tight .calendar-month-root .grid {
-    margin-top: 0.125rem !important;
-    gap: 0.1rem !important;
-  }
-
-  .print-calendar-tight .calendar-month-root button.relative {
-    min-height: 0.55rem !important;
-    padding: 1px !important;
-    border-radius: 0.125rem !important;
-    font-size: 7px !important;
-    line-height: 1.05 !important;
-  }
-
-  .print-calendar-tight .calendar-month-root .flex.h-5.items-end {
-    height: 0.65rem !important;
-    padding-bottom: 0 !important;
-    font-size: 0.45rem !important;
-  }
-
-  /* Month toggles chrome hidden in print (selection is preserved for layout) */
-  .print-calendar-tight > div:first-child {
+  /* Disable scrollbars while printing */
+  ::-webkit-scrollbar {
     display: none !important;
+  }
+
+  /**
+   * Month day-grid: first row (weekday headers) auto-sized, then equal-height week rows.
+   * --month-week-rows is set inline from MonthGrid (ceil((pad + daysInMonth) / 7)).
+   */
+  .month-grid-print-rows {
+    grid-auto-rows: unset;
+    grid-template-rows: auto repeat(
+      var(--month-week-rows, 5),
+      minmax(0, 1fr)
+    );
   }
 }

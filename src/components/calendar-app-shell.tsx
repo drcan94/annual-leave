@@ -21,7 +21,7 @@ export function CalendarAppShell({ children }: CalendarAppShellProps) {
   }, [mobileSidebarOpen]);
 
   return (
-    <div className="relative grid h-[100dvh] min-h-0 grid-cols-1 grid-rows-[auto_minmax(0,1fr)] bg-zinc-100 text-zinc-950 md:grid-cols-[220px_minmax(0,1fr)] print:h-[210mm] print:max-h-[210mm] print:min-h-0 print:grid-rows-[minmax(0,1fr)] print:bg-white print:grid-cols-1 dark:bg-zinc-950 dark:text-zinc-50">
+    <div className="relative grid h-[100dvh] min-h-0 grid-cols-1 grid-rows-[auto_minmax(0,1fr)] bg-zinc-100 text-zinc-950 md:grid-cols-[220px_minmax(0,1fr)] print:h-full print:max-h-full print:min-h-0 print:grid-rows-[minmax(0,1fr)] print:bg-white print:grid-cols-1 dark:bg-zinc-950 dark:text-zinc-50">
       <Header
         className="col-span-full md:col-span-2"
         mobileSidebarOpen={mobileSidebarOpen}

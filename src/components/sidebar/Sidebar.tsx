@@ -122,12 +122,12 @@ export function Sidebar({
   );
 
   const asideCn = [
-    "print:hidden flex min-h-0 flex-col border-r border-zinc-200/80 bg-white transition-transform duration-300 ease-out dark:border-zinc-800/80 dark:bg-zinc-950",
-    "max-md:pointer-events-none max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-50 max-md:h-[100dvh] max-md:w-[85vw] max-md:max-w-[320px] max-md:-translate-x-full max-md:overflow-y-auto max-md:shadow-2xl",
+    "print:hidden flex min-h-0 w-[220px] shrink-0 flex-col border-r border-zinc-200/80 bg-white transition-transform duration-300 ease-out dark:border-zinc-800/80 dark:bg-zinc-950",
+    "max-md:pointer-events-none max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-50 max-md:w-[85vw] max-md:max-w-[320px] max-md:-translate-x-full max-md:overflow-y-auto max-md:shadow-2xl",
     mobileDrawerOpen
       ? "max-md:pointer-events-auto max-md:translate-x-0"
       : "",
-    "md:pointer-events-auto md:relative md:col-start-1 md:row-start-2 md:h-full md:min-h-0 md:w-full md:translate-x-0 md:bg-zinc-50/90 md:shadow-none md:dark:bg-zinc-950/50",
+    "md:pointer-events-auto md:relative md:min-h-0 md:translate-x-0 md:overflow-y-auto md:bg-zinc-50/90 md:shadow-none md:dark:bg-zinc-950/50",
   ].join(" ");
 
   return (

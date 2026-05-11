@@ -21,18 +21,26 @@ export function CalendarAppShell({ children }: CalendarAppShellProps) {
   }, [mobileSidebarOpen]);
 
   return (
-    <div className="relative grid h-[100dvh] min-h-0 grid-cols-1 grid-rows-[auto_minmax(0,1fr)] bg-zinc-100 text-zinc-950 md:grid-cols-[220px_minmax(0,1fr)] print:h-full print:max-h-full print:min-h-0 print:grid-rows-[minmax(0,1fr)] print:bg-white print:grid-cols-1 dark:bg-zinc-950 dark:text-zinc-50">
+    <div className="fixed inset-0 overflow-hidden flex flex-col bg-white text-zinc-950 dark:bg-zinc-950 dark:text-zinc-50 print:relative print:inset-auto print:h-auto print:min-h-0 print:overflow-visible">
       <Header
-        className="col-span-full md:col-span-2"
+        className="shrink-0"
         mobileSidebarOpen={mobileSidebarOpen}
         onMobileSidebarToggle={() =>
           setMobileSidebarOpen((open) => !open)
         }
       />
 
-      <main className="relative z-0 col-span-full row-start-2 flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto md:col-span-1 md:col-start-2 md:row-start-2 print:col-span-full print:h-full print:min-h-0 print:w-full print:overflow-hidden print:flex-1 dark:scheme-dark">
-        {children}
-      </main>
+      <div className="flex min-h-0 flex-1 flex-row overflow-hidden print:min-h-0 print:flex-1">
+        <Sidebar
+          id="calendar-sidebar-panel"
+          mobileDrawerOpen={mobileSidebarOpen}
+          onMobileNavigate={() => setMobileSidebarOpen(false)}
+        />
+
+        <main className="flex-1 overflow-y-auto overflow-x-hidden relative w-full h-full min-h-0 webkit-overflow-scrolling-touch print:min-h-0 print:flex-1 print:overflow-hidden">
+          {children}
+        </main>
+      </div>
 
       {mobileSidebarOpen ? (
         <button
@@ -42,12 +50,6 @@ export function CalendarAppShell({ children }: CalendarAppShellProps) {
           onClick={() => setMobileSidebarOpen(false)}
         />
       ) : null}
-
-      <Sidebar
-        id="calendar-sidebar-panel"
-        mobileDrawerOpen={mobileSidebarOpen}
-        onMobileNavigate={() => setMobileSidebarOpen(false)}
-      />
     </div>
   );
 }

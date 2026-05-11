@@ -90,9 +90,9 @@ export function CustomMonthsView() {
             Görüntülemek için en az bir ay seçin.
           </p>
         ) : (
-          <div className="calendar-h-scroll overflow-x-auto overscroll-x-contain pb-4 [-webkit-overflow-scrolling:touch] print:h-full print:min-h-0 print:flex-1 print:overflow-hidden print:p-0 print:pb-0">
+          <div className="calendar-h-scroll w-full overflow-x-auto overscroll-x-contain pb-4 [-webkit-overflow-scrolling:touch] webkit-overflow-scrolling-touch print:h-full print:min-h-0 print:flex-1 print:overflow-hidden print:pb-0">
             <div
-              className={`custom-month-grid grid min-w-[min(100%,800px)] grid-cols-1 gap-6 sm:grid-cols-2 md:min-w-0 lg:grid-cols-3 2xl:grid-cols-4 ${printMonthTileGridClass}`}
+              className={`custom-month-grid grid min-w-[800px] grid-cols-1 gap-6 sm:grid-cols-2 md:min-w-0 lg:grid-cols-3 2xl:grid-cols-4 ${printMonthTileGridClass}`}
             >
               {sortedMonths.map((month) => (
                 <MonthGrid key={month} year={currentYear} month={month} />

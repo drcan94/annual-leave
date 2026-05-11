@@ -32,8 +32,8 @@ export function WeeklyView() {
           className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-8 bg-gradient-to-l from-zinc-50 via-zinc-50/80 to-transparent print:hidden md:hidden dark:from-zinc-950 dark:via-zinc-950/80"
           aria-hidden
         />
-        <div className="calendar-h-scroll w-full overflow-x-auto overscroll-x-contain pb-4 [-webkit-overflow-scrolling:touch] print:h-full print:min-h-0 print:flex-1 print:overflow-hidden print:pb-0">
-          <div className="grid min-w-[700px] grid-cols-7 gap-2 md:min-w-0 md:gap-3 print:h-full print:min-h-0 print:min-w-0 print:grid-cols-7 print:gap-1">
+        <div className="calendar-h-scroll w-full overflow-x-auto overscroll-x-contain pb-4 [-webkit-overflow-scrolling:touch] webkit-overflow-scrolling-touch print:h-full print:min-h-0 print:flex-1 print:overflow-hidden print:pb-0">
+          <div className="grid min-w-[800px] grid-cols-7 gap-2 md:min-w-0 md:gap-3 print:h-full print:min-h-0 print:min-w-0 print:grid-cols-7 print:gap-1">
             {days.map((day) => {
               const iso = format(day, "yyyy-MM-dd");
               const dayLeaves = leavesOnDay(iso, leaves);

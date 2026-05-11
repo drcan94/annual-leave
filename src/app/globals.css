@@ -5,6 +5,11 @@
   --foreground: #171717;
 }
 
+.dark {
+  --background: #09090b;
+  --foreground: #fafafa;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -12,11 +17,8 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.webkit-overflow-scrolling-touch {
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
@@ -44,14 +46,12 @@ body {
   background-color: rgb(161 161 170 / 0.45);
 }
 
-@media (prefers-color-scheme: dark) {
-  .calendar-h-scroll {
-    scrollbar-color: rgb(113 113 122 / 0.5) transparent;
-  }
+.dark .calendar-h-scroll {
+  scrollbar-color: rgb(113 113 122 / 0.5) transparent;
+}
 
-  .calendar-h-scroll::-webkit-scrollbar-thumb {
-    background-color: rgb(113 113 122 / 0.5);
-  }
+.dark .calendar-h-scroll::-webkit-scrollbar-thumb {
+  background-color: rgb(113 113 122 / 0.5);
 }
 
 .hide-scrollbar {

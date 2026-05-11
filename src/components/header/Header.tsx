@@ -9,6 +9,7 @@ import {
   Download,
   FileDown,
   Printer,
+  QrCode,
   RotateCcw,
   Users,
 } from "lucide-react";
@@ -25,6 +26,8 @@ import {
 } from "date-fns";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { QRSyncModal } from "@/components/QRSyncModal";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { dateFnsLocale } from "@/lib/date-locale";
 import { useCalendarStore, type CalendarView } from "@/stores";
 import {
@@ -64,6 +67,8 @@ export function Header({
 
   const [exportOpen, setExportOpen] = useState(false);
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+  const [qrSyncOpen, setQrSyncOpen] = useState(false);
+  const [qrSyncSession, setQrSyncSession] = useState(0);
   const exportMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -198,6 +203,12 @@ export function Header({
 
   return (
     <>
+      <QRSyncModal
+        key={qrSyncSession}
+        open={qrSyncOpen}
+        onClose={() => setQrSyncOpen(false)}
+      />
+
       <ConfirmDialog
         open={resetConfirmOpen}
         title="Tüm verileri sıfırlansın mı?"
@@ -309,6 +320,8 @@ export function Header({
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5 sm:justify-end">
+          <ThemeToggle />
+
           <button
             type="button"
             onClick={() => setResetConfirmOpen(true)}
@@ -387,6 +400,20 @@ export function Header({
                 >
                   <Printer className="size-3.5 shrink-0 opacity-70" aria-hidden />
                   Takvimi Yazdır
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-[11px] font-medium text-zinc-800 hover:bg-zinc-50 focus:bg-zinc-50 focus:outline-none focus-visible:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-inset dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus-visible:bg-zinc-800 dark:focus-visible:ring-zinc-500"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    closeExportSoon();
+                    setQrSyncSession((s) => s + 1);
+                    setQrSyncOpen(true);
+                  }}
+                >
+                  <QrCode className="size-3.5 shrink-0 opacity-70" aria-hidden />
+                  QR ile Eşitle
                 </button>
               </div>
             ) : null}

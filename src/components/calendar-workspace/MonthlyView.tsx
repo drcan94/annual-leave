@@ -19,7 +19,7 @@ export function MonthlyView() {
           className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-8 bg-gradient-to-l from-zinc-50 via-zinc-50/80 to-transparent print:hidden md:hidden dark:from-zinc-950 dark:via-zinc-950/80"
           aria-hidden
         />
-        <div className="calendar-h-scroll w-full overflow-x-auto overscroll-x-contain pb-4 [-webkit-overflow-scrolling:touch] print:h-full print:min-h-0 print:flex-1 print:overflow-hidden print:pb-0">
+        <div className="calendar-h-scroll w-full overflow-x-auto overscroll-x-contain pb-4 [-webkit-overflow-scrolling:touch] webkit-overflow-scrolling-touch print:h-full print:min-h-0 print:flex-1 print:overflow-hidden print:pb-0">
           <div className="min-w-[800px] md:min-w-0 print:flex print:h-full print:min-h-0 print:w-full print:min-w-0">
             <MonthGrid
               year={anchor.getFullYear()}

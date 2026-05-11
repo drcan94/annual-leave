@@ -56,10 +56,10 @@ export function CalendarWorkspace() {
   })();
 
   return (
-    <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-x-hidden bg-zinc-50/40 print:fixed print:inset-0 print:z-[9999] print:m-0 print:flex print:h-screen print:w-screen print:flex-col print:overflow-hidden print:bg-white print:p-2 dark:bg-zinc-950/30">
+    <div className="relative w-full bg-zinc-50/40 print:fixed print:inset-0 print:z-[9999] print:m-0 print:flex print:h-screen print:w-screen print:flex-col print:overflow-hidden print:bg-white print:p-2 dark:bg-zinc-950/30">
       <LeaveAssignmentModal />
-      <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden p-4 print:m-0 print:min-h-0 print:flex-1 print:p-0 print:pt-0 md:p-5 xl:p-6">
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden print:min-h-0 print:flex-1">
+      <div className="relative w-full p-4 print:m-0 print:flex print:min-h-0 print:flex-1 print:flex-col print:p-0 md:p-5 xl:p-6">
+        <div className="relative w-full print:flex print:min-h-0 print:flex-1 print:flex-col">
           {body}
         </div>
         <PrintLegend />
